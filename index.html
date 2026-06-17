@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Squerxx — bio</title>
+  <meta name="description" content="Dark glitch bio page with links, avatar, music and animated visual effects." />
+  <meta property="og:title" content="Squerxx — bio" />
+  <meta property="og:description" content="GitHub · Telegram · Steam · Discord" />
+  <meta property="og:image" content="assets/avatar.jpg" />
+  <link rel="icon" href="assets/avatar.jpg" />
+  <link rel="preload" href="assets/bg.webp" as="image" />
+  <link rel="preload" href="assets/H4TE666.mp3" as="audio" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+  <div class="bg" aria-hidden="true"></div>
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <section class="entry" id="entry">
+    <div class="entry__box">
+      <div class="entry__logo">Squer<span>xx</span></div>
+      <p>click to enter</p>
+    </div>
+  </section>
+
+  <main class="page" id="page">
+    <article class="profile-card" id="card">
+      <div class="banner">
+        <div class="banner__glow"></div>
+      </div>
+
+      <div class="avatar-wrap">
+        <img src="assets/avatar.jpg" alt="avatar" class="avatar" />
+        <span class="status" title="online"></span>
+      </div>
+
+      <section class="identity">
+        <p class="eyebrow">profile // bio</p>
+        <h1 class="glitch" data-text="Squerxx">Squerxx</h1>
+        <p class="tagline" id="typed">dark profile · glitch aesthetic · H4TE666</p>
+      </section>
+
+      <section class="stats" aria-label="profile stats">
+        <div><b>01</b><span>github</span></div>
+        <div><b>02</b><span>telegram</span></div>
+        <div><b>03</b><span>steam</span></div>
+        <div><b>04</b><span>discord</span></div>
+      </section>
+
+      <nav class="links" aria-label="social links">
+        <a href="https://github.com/html2195" target="_blank" rel="noopener noreferrer" class="link-card">
+          <span class="icon">⌬</span>
+          <span><b>GitHub</b><small>github.com/html2195</small></span>
+          <em>open</em>
+        </a>
+        <a href="https://t.me/deluser0" target="_blank" rel="noopener noreferrer" class="link-card">
+          <span class="icon">✦</span>
+          <span><b>Telegram</b><small>@deluser0</small></span>
+          <em>open</em>
+        </a>
+        <a href="https://steamcommunity.com/id/Bananaboy200952/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <span class="icon">◉</span>
+          <span><b>Steam</b><small>Bananaboy200952</small></span>
+          <em>open</em>
+        </a>
+        <button class="link-card" id="discordCopy" type="button" data-copy="twizzy_daster">
+          <span class="icon">☾</span>
+          <span><b>Discord</b><small>twizzy_daster</small></span>
+          <em id="discordText">copy</em>
+        </button>
+      </nav>
+
+      <section class="player" aria-label="music player">
+        <audio id="audio" src="assets/H4TE666.mp3" preload="metadata" loop></audio>
+        <button class="play" id="play" type="button" aria-label="play or pause music">▶</button>
+        <div class="track">
+          <div class="track__top">
+            <b>H4TE666</b>
+            <span id="time">00:00 / 00:00</span>
+          </div>
+          <div class="bar" id="bar"><span id="progress"></span></div>
+        </div>
+        <button class="mute" id="mute" type="button" aria-label="mute music">sound</button>
+      </section>
+    </article>
+
+    <footer class="footer">
+      <span>made for dark bio</span>
+      <span class="pulse-dot"></span>
+      <span>fullscreen ready</span>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
