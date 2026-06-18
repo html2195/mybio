@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Squerxx — bio</title>
+  <title>twizzy_daster — bio</title>
   <meta name="description" content="Dark glitch bio page with links, avatar, music and animated visual effects." />
-  <meta property="og:title" content="Squerxx — bio" />
+  <meta property="og:title" content="twizzy_daster — bio" />
   <meta property="og:description" content="GitHub · Telegram · Steam · Discord" />
   <meta property="og:image" content="assets/avatar.jpg" />
   <link rel="icon" href="assets/avatar.jpg" />
-  <link rel="preload" href="assets/bg.webp" as="image" />
-  <link rel="preload" href="assets/H4TE666.mp3" as="audio" />
+  <link rel="preload" href="assets/bg.webp" as="image" type="image/webp" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -48,7 +47,7 @@
 
   <section class="entry" id="entry">
     <div class="entry__box">
-      <div class="entry__logo">Squer<span>xx</span></div>
+      <div class="entry__logo">H4TE<span>666</span></div>
       <p>click to enter</p>
     </div>
   </section>
@@ -60,13 +59,13 @@
       </div>
 
       <div class="avatar-wrap">
-        <img src="assets/avatar.jpg" alt="avatar" class="avatar" />
+        <img src="assets/avatar.jpg" alt="avatar" class="avatar" decoding="async" draggable="false" />
         <span class="status" title="online"></span>
       </div>
 
       <section class="identity">
         <p class="eyebrow">profile // bio</p>
-        <h1 class="glitch" data-text="Squerxx">Squerxx</h1>
+        <h1 class="glitch" data-text="twizzy_daster">twizzy_daster</h1>
         <p class="tagline" id="typed">dark profile · glitch aesthetic · H4TE666</p>
       </section>
 
@@ -121,7 +120,7 @@
         <button class="mute" id="mute" type="button" aria-label="mute music">sound</button>
         <div class="volume">
           <span class="volume__label">vol</span>
-          <input id="volume" class="volume__slider" type="range" min="0" max="100" value="22" aria-label="music volume" />
+          <input id="volume" class="volume__slider" type="range" min="0" max="100" step="1" value="22" aria-label="music volume" />
           <span id="volumeValue" class="volume__value">22%</span>
         </div>
       </section>
