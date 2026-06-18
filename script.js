@@ -2,6 +2,8 @@ const entry = document.getElementById('entry');
 const audio = document.getElementById('audio');
 const playBtn = document.getElementById('play');
 const muteBtn = document.getElementById('mute');
+const volumeSlider = document.getElementById('volume');
+const volumeValue = document.getElementById('volumeValue');
 const timeEl = document.getElementById('time');
 const bar = document.getElementById('bar');
 const progress = document.getElementById('progress');
@@ -19,6 +21,35 @@ const phrases = [
 let phraseIndex = 0;
 let charIndex = 0;
 let deleting = false;
+
+const DEFAULT_VOLUME = 0.22;
+let lastVolume = DEFAULT_VOLUME;
+
+function clampVolume(value) {
+  if (value === null || value === undefined || value === '') return DEFAULT_VOLUME;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_VOLUME;
+  return Math.min(Math.max(parsed, 0), 1);
+}
+
+function updateVolumeUI() {
+  const percent = Math.round(audio.volume * 100);
+  volumeSlider.value = String(percent);
+  volumeValue.textContent = `${percent}%`;
+  muteBtn.textContent = audio.muted || audio.volume === 0 ? 'muted' : 'sound';
+}
+
+function setVolumeFromPercent(percent, save = true) {
+  const volume = clampVolume(Number(percent) / 100);
+  audio.volume = volume;
+  audio.muted = volume === 0;
+  if (volume > 0) lastVolume = volume;
+  if (save) localStorage.setItem('bio-volume', String(volume));
+  updateVolumeUI();
+}
+
+const savedVolume = clampVolume(localStorage.getItem('bio-volume'));
+setVolumeFromPercent(Math.round(savedVolume * 100), false);
 
 function typeLoop() {
   const current = phrases[phraseIndex];
@@ -50,7 +81,6 @@ function updateTime() {
 
 async function startAudio() {
   try {
-    audio.volume = 0.68;
     await audio.play();
     playBtn.textContent = 'Ⅱ';
   } catch (e) {
@@ -83,8 +113,17 @@ bar.addEventListener('click', (e) => {
 });
 
 muteBtn.addEventListener('click', () => {
-  audio.muted = !audio.muted;
-  muteBtn.textContent = audio.muted ? 'muted' : 'sound';
+  if (audio.muted || audio.volume === 0) {
+    audio.muted = false;
+    if (audio.volume === 0) audio.volume = lastVolume || DEFAULT_VOLUME;
+  } else {
+    audio.muted = true;
+  }
+  updateVolumeUI();
+});
+
+volumeSlider.addEventListener('input', () => {
+  setVolumeFromPercent(volumeSlider.value);
 });
 
 discordCopy.addEventListener('click', async () => {
