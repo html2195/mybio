@@ -1,350 +1,331 @@
 const entry = document.getElementById('entry');
-const audio = document.getElementById('audio');
+const card = document.getElementById('card');
+const music = document.getElementById('musicAudio');
+const rain = document.getElementById('rainAudio');
+
 const playBtn = document.getElementById('play');
+const playIcon = document.getElementById('playIcon');
 const muteBtn = document.getElementById('mute');
+const rainToggle = document.getElementById('rainToggle');
+const rewindBtn = document.getElementById('rewind');
+const forwardBtn = document.getElementById('forward');
 const volumeSlider = document.getElementById('volume');
 const volumeValue = document.getElementById('volumeValue');
 const timeEl = document.getElementById('time');
 const bar = document.getElementById('bar');
 const progress = document.getElementById('progress');
+const progressThumb = document.getElementById('progressThumb');
 const discordCopy = document.getElementById('discordCopy');
 const discordText = document.getElementById('discordText');
-const card = document.getElementById('card');
-const typed = document.getElementById('typed');
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d', { alpha: true });
+const searchTyping = document.getElementById('searchTyping');
 
-const phrases = [
-  'dark profile · glitch aesthetic · H4TE666',
-  'github · telegram · steam · discord',
-  'purple noise // spectre teleport vibe',
-  'bio page loaded successfully'
+const DEPRESSION_URL = 'https://ru.wikipedia.org/wiki/%D0%94%D0%B5%D0%BF%D1%80%D0%B5%D1%81%D1%81%D0%B8%D1%8F';
+
+function openDepressionTab(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  window.open(DEPRESSION_URL, '_blank', 'noopener,noreferrer');
+}
+
+const MUSIC_BASE_VOLUME = 0.22;
+const RAIN_BASE_VOLUME = 0.09;
+const DEFAULT_MASTER = 0.48;
+const SEEK_STEP = 10;
+
+let masterVolume = DEFAULT_MASTER;
+let lastMasterVolume = DEFAULT_MASTER;
+let started = false;
+let isMuted = false;
+let rainEnabled = true;
+let isSeeking = false;
+let lastSearchPhrase = '';
+let searchQueue = [];
+let searchPhrase = '';
+let searchChar = 0;
+let searchDeleting = false;
+
+const searchPhrases = [
+  'A New Series of Melancholy',
+  'The rain is beautiful, and will I be by her side?',
+  'How many days are there in a year?',
+  'Will I be successful?',
+  'Should I write to her today?',
+  'Yulia? Alisa? Nastya? Katya? Natasha? Olya? And yet, it’s me.',
+  'Why am I a bastard in the eyes of girls?'
 ];
 
-const DEFAULT_VOLUME = 0.22;
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const mobileQuery = window.matchMedia('(max-width: 720px)');
-const tiltQuery = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 841px)');
-
-let phraseIndex = 0;
-let charIndex = 0;
-let deleting = false;
-let currentVolume = DEFAULT_VOLUME;
-let lastVolume = DEFAULT_VOLUME;
-let isMuted = false;
-let audioCtx = null;
-let sourceNode = null;
-let gainNode = null;
-let webAudioReady = false;
-let particles = [];
-let particleFrame = null;
-let tiltFrame = null;
-let lastMouseEvent = null;
-
-function storageGet(key) {
-  try { return localStorage.getItem(key); } catch (_) { return null; }
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
-function storageSet(key, value) {
-  try { localStorage.setItem(key, value); } catch (_) {}
-}
+function shuffle(list) {
+  const array = [...list];
 
-function clampVolume(value) {
-  if (value === null || value === undefined || value === '') return DEFAULT_VOLUME;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return DEFAULT_VOLUME;
-  return Math.min(Math.max(parsed, 0), 1);
-}
-
-function updateVolumeEngine() {
-  // Native HTMLAudioElement volume is the most reliable on Vercel/static hosting.
-  // WebAudio can randomly break playback after deploys on some browsers, so we avoid it.
-  const safeVolume = clampVolume(currentVolume);
-  audio.volume = safeVolume;
-  audio.muted = Boolean(isMuted || safeVolume === 0);
-}
-
-
-function updateVolumeUI() {
-  const percent = Math.round(currentVolume * 100);
-  volumeSlider.value = String(percent);
-  volumeValue.textContent = `${percent}%`;
-  muteBtn.textContent = isMuted || currentVolume === 0 ? 'muted' : 'sound';
-  muteBtn.setAttribute('aria-pressed', String(isMuted || currentVolume === 0));
-}
-
-function setVolumeFromPercent(percent, save = true) {
-  currentVolume = clampVolume(Number(percent) / 100);
-
-  if (currentVolume > 0) {
-    lastVolume = currentVolume;
-    isMuted = false;
-  } else {
-    isMuted = true;
+  for (let i = array.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
 
-  if (save) {
-    storageSet('bio-volume', String(currentVolume));
-    storageSet('bio-muted', String(isMuted));
+  if (array[0] === lastSearchPhrase && array.length > 1) {
+    [array[0], array[1]] = [array[1], array[0]];
   }
 
-  updateVolumeEngine();
-  updateVolumeUI();
+  return array;
 }
 
-async function initAudioGraph() {
-  // Kept as a no-op so older code paths still work.
-  // Playback now uses the normal <audio> element to avoid silent audio bugs.
-  updateVolumeEngine();
-}
-
-
-function loadSavedVolume() {
-  const savedVolume = storageGet('bio-volume');
-  currentVolume = savedVolume === null ? DEFAULT_VOLUME : clampVolume(savedVolume);
-  if (currentVolume <= 0) currentVolume = DEFAULT_VOLUME;
-  lastVolume = currentVolume;
-
-  // Do not restore old muted state after deploys: it caused sites to look broken.
-  isMuted = false;
-  storageSet('bio-muted', 'false');
-
-  updateVolumeEngine();
-  updateVolumeUI();
-}
-
-
-loadSavedVolume();
-
-function typeLoop() {
-  if (reduceMotion.matches) {
-    typed.textContent = phrases[0];
-    return;
+function nextSearchPhrase() {
+  if (searchQueue.length === 0) {
+    searchQueue = shuffle(searchPhrases);
   }
 
-  const current = phrases[phraseIndex];
-  typed.textContent = current.slice(0, charIndex) + (Date.now() % 1000 < 500 ? '|' : '');
-
-  if (!deleting && charIndex < current.length) charIndex++;
-  else if (!deleting && charIndex >= current.length) setTimeout(() => { deleting = true; }, 950);
-  else if (deleting && charIndex > 0) charIndex--;
-  else {
-    deleting = false;
-    phraseIndex = (phraseIndex + 1) % phrases.length;
-  }
-
-  setTimeout(typeLoop, deleting ? 34 : 62);
+  const next = searchQueue.shift();
+  lastSearchPhrase = next;
+  return next;
 }
 
-typeLoop();
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return '00:00';
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
 
-function fmt(sec) {
-  if (!Number.isFinite(sec)) return '00:00';
-  const m = Math.floor(sec / 60).toString().padStart(2, '0');
-  const s = Math.floor(sec % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+function setVolumes() {
+  const activeMaster = isMuted ? 0 : masterVolume;
+
+  music.volume = clamp(activeMaster * MUSIC_BASE_VOLUME, 0, 1);
+  rain.volume = rainEnabled ? clamp(activeMaster * RAIN_BASE_VOLUME, 0, 1) : 0;
+
+  volumeSlider.value = Math.round(masterVolume * 100);
+  volumeValue.textContent = `${Math.round(masterVolume * 100)}%`;
+  muteBtn.textContent = isMuted || activeMaster === 0 ? 'muted' : 'sound';
+  rainToggle.textContent = rainEnabled ? 'rain on' : 'rain off';
 }
 
 function updateTime() {
-  const dur = audio.duration || 0;
-  const cur = audio.currentTime || 0;
-  timeEl.textContent = `${fmt(cur)} / ${fmt(dur)}`;
-  progress.style.width = dur ? `${(cur / dur) * 100}%` : '0%';
+  const duration = music.duration || 0;
+  const current = music.currentTime || 0;
+  const percent = duration ? (current / duration) * 100 : 0;
+  const safePercent = clamp(percent, 0, 100);
+
+  progress.style.width = `${safePercent}%`;
+  progressThumb.style.left = `${safePercent}%`;
+  timeEl.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
 }
 
-async function startAudio() {
+async function safePlay(audio) {
   try {
-    await initAudioGraph();
-
-    if (currentVolume <= 0) {
-      currentVolume = lastVolume || DEFAULT_VOLUME;
-      isMuted = false;
-      updateVolumeUI();
-    }
-
-    updateVolumeEngine();
-    audio.load?.();
-    const playPromise = audio.play();
-    if (playPromise && typeof playPromise.then === 'function') await playPromise;
-    playBtn.textContent = 'Ⅱ';
-  } catch (err) {
-    console.warn('Audio play blocked or failed:', err);
-    playBtn.textContent = '▶';
+    await audio.play();
+    return true;
+  } catch (error) {
+    return false;
   }
 }
 
+async function playAmbience() {
+  setVolumes();
 
-entry.addEventListener('click', async () => {
+  const musicStarted = await safePlay(music);
+  const rainStarted = rainEnabled ? await safePlay(rain) : true;
+
+  if (musicStarted || rainStarted) {
+    playIcon.textContent = 'Ⅱ';
+    started = true;
+  } else {
+    playIcon.textContent = '▶';
+  }
+}
+
+function pauseAmbience() {
+  music.pause();
+  rain.pause();
+  playIcon.textContent = '▶';
+}
+
+function togglePlay() {
+  if (music.paused) {
+    playAmbience();
+  } else {
+    pauseAmbience();
+  }
+}
+
+function enterSite() {
   entry.classList.add('hidden');
-  await startAudio();
-}, { once: true });
-
-playBtn.addEventListener('click', async () => {
-  if (audio.paused) await startAudio();
-  else {
-    audio.pause();
-    playBtn.textContent = '▶';
-  }
-});
-
-audio.addEventListener('play', () => { playBtn.textContent = 'Ⅱ'; });
-audio.addEventListener('pause', () => { playBtn.textContent = '▶'; });
-audio.addEventListener('loadedmetadata', updateTime);
-audio.addEventListener('timeupdate', updateTime);
-
-function seekAudio(clientX) {
-  const rect = bar.getBoundingClientRect();
-  const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
-  if (audio.duration) audio.currentTime = (x / rect.width) * audio.duration;
+  playAmbience();
 }
 
-bar.addEventListener('click', (e) => seekAudio(e.clientX));
-bar.addEventListener('pointerdown', (e) => {
-  seekAudio(e.clientX);
-  bar.setPointerCapture?.(e.pointerId);
+function seekBy(seconds) {
+  if (!music.duration) return;
+
+  music.currentTime = clamp(music.currentTime + seconds, 0, music.duration);
+  updateTime();
+}
+
+function seekFromPointer(clientX) {
+  if (!music.duration) return;
+
+  const rect = bar.getBoundingClientRect();
+  const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+  music.currentTime = ratio * music.duration;
+  updateTime();
+}
+
+function startSearchTyping() {
+  if (!searchPhrase) {
+    searchPhrase = nextSearchPhrase();
+  }
+
+  if (!searchDeleting) {
+    searchChar += 1;
+    searchTyping.textContent = searchPhrase.slice(0, searchChar);
+
+    if (searchChar >= searchPhrase.length) {
+      searchDeleting = true;
+      setTimeout(startSearchTyping, 1800 + Math.random() * 800);
+      return;
+    }
+  } else {
+    searchChar -= 1;
+    searchTyping.textContent = searchPhrase.slice(0, searchChar);
+
+    if (searchChar <= 0) {
+      searchDeleting = false;
+      searchPhrase = nextSearchPhrase();
+    }
+  }
+
+  const delay = searchDeleting ? 24 : 38 + Math.random() * 32;
+  setTimeout(startSearchTyping, delay);
+}
+
+function copyDiscord() {
+  const value = discordText.textContent.trim();
+  const label = discordCopy.querySelector('em');
+
+  navigator.clipboard?.writeText(value).then(() => {
+    label.textContent = 'copied';
+    setTimeout(() => {
+      label.textContent = 'copy';
+    }, 1300);
+  }).catch(() => {
+    label.textContent = 'copy';
+  });
+}
+
+function setupTilt() {
+  const canTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!canTilt) return;
+
+  card.addEventListener('pointermove', (event) => {
+    const rect = card.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+    card.style.transform = `perspective(900px) rotateX(${(-y * 3.2).toFixed(2)}deg) rotateY(${(x * 4).toFixed(2)}deg)`;
+  });
+
+  card.addEventListener('pointerleave', () => {
+    card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+  });
+}
+
+volumeSlider.addEventListener('input', () => {
+  masterVolume = clamp(Number(volumeSlider.value) / 100, 0, 1);
+
+  if (masterVolume > 0) {
+    lastMasterVolume = masterVolume;
+    isMuted = false;
+  }
+
+  setVolumes();
 });
-bar.addEventListener('pointermove', (e) => {
-  if (e.buttons === 1) seekAudio(e.clientX);
+
+playBtn.addEventListener('click', togglePlay);
+rewindBtn.addEventListener('click', () => seekBy(-SEEK_STEP));
+forwardBtn.addEventListener('click', () => seekBy(SEEK_STEP));
+
+rainToggle.addEventListener('click', () => {
+  rainEnabled = !rainEnabled;
+
+  if (!rainEnabled) {
+    rain.pause();
+  } else if (started && !music.paused) {
+    safePlay(rain);
+  }
+
+  setVolumes();
 });
 
 muteBtn.addEventListener('click', () => {
-  if (isMuted || currentVolume === 0) {
+  if (isMuted || masterVolume === 0) {
     isMuted = false;
-    if (currentVolume === 0) currentVolume = lastVolume || DEFAULT_VOLUME;
+    masterVolume = lastMasterVolume || DEFAULT_MASTER;
   } else {
+    lastMasterVolume = masterVolume || DEFAULT_MASTER;
     isMuted = true;
   }
 
-  storageSet('bio-volume', String(currentVolume));
-  storageSet('bio-muted', String(isMuted));
-  updateVolumeEngine();
-  updateVolumeUI();
+  setVolumes();
 });
 
-function handleVolumeInput() {
-  setVolumeFromPercent(volumeSlider.value);
-}
-
-volumeSlider.addEventListener('input', handleVolumeInput);
-volumeSlider.addEventListener('change', handleVolumeInput);
-volumeSlider.addEventListener('pointerdown', (e) => e.stopPropagation());
-volumeSlider.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
-
-discordCopy.addEventListener('click', async () => {
-  const value = discordCopy.dataset.copy;
-  try {
-    await navigator.clipboard.writeText(value);
-    discordText.textContent = 'copied';
-  } catch (_) {
-    discordText.textContent = value;
-  }
-  setTimeout(() => { discordText.textContent = 'copy'; }, 1500);
+bar.addEventListener('pointerdown', (event) => {
+  isSeeking = true;
+  bar.setPointerCapture(event.pointerId);
+  seekFromPointer(event.clientX);
 });
 
-function applyTilt() {
-  tiltFrame = null;
-  if (!lastMouseEvent || !tiltQuery.matches) return;
+bar.addEventListener('pointermove', (event) => {
+  if (!isSeeking) return;
+  seekFromPointer(event.clientX);
+});
 
-  const rect = card.getBoundingClientRect();
-  const x = lastMouseEvent.clientX - rect.left;
-  const y = lastMouseEvent.clientY - rect.top;
-  const cx = rect.width / 2;
-  const cy = rect.height / 2;
+bar.addEventListener('pointerup', (event) => {
+  isSeeking = false;
+  bar.releasePointerCapture(event.pointerId);
+});
 
-  if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
-    const rx = ((y - cy) / cy) * -5;
-    const ry = ((x - cx) / cx) * 6;
-    card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-  } else {
-    card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
-  }
-}
+bar.addEventListener('keydown', (event) => {
+  if (!music.duration) return;
 
-window.addEventListener('mousemove', (e) => {
-  if (!tiltQuery.matches) return;
-  lastMouseEvent = e;
-  if (!tiltFrame) tiltFrame = requestAnimationFrame(applyTilt);
-}, { passive: true });
-
-function resizeParticles() {
-  const dpr = Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.5 : 2);
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  canvas.width = Math.floor(width * dpr);
-  canvas.height = Math.floor(height * dpr);
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  if (reduceMotion.matches) {
-    particles = [];
-    return;
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    seekBy(-5);
   }
 
-  const density = mobileQuery.matches ? 26000 : 14000;
-  const maxCount = mobileQuery.matches ? 48 : 105;
-  const count = Math.min(maxCount, Math.floor((width * height) / density));
-  particles = Array.from({ length: count }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    r: Math.random() * 1.9 + 0.35,
-    vx: (Math.random() - 0.5) * (mobileQuery.matches ? 0.18 : 0.28),
-    vy: (Math.random() - 0.5) * (mobileQuery.matches ? 0.18 : 0.28),
-    a: Math.random() * 0.45 + 0.12
-  }));
-}
-
-function drawParticles() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  ctx.clearRect(0, 0, width, height);
-
-  for (const p of particles) {
-    p.x += p.vx;
-    p.y += p.vy;
-
-    if (p.x < -20) p.x = width + 20;
-    if (p.x > width + 20) p.x = -20;
-    if (p.y < -20) p.y = height + 20;
-    if (p.y > height + 20) p.y = -20;
-
-    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
-    g.addColorStop(0, `rgba(255,43,214,${p.a})`);
-    g.addColorStop(0.45, `rgba(141,53,255,${p.a * 0.4})`);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * 8, 0, Math.PI * 2);
-    ctx.fill();
+  if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    seekBy(5);
   }
 
-  particleFrame = requestAnimationFrame(drawParticles);
-}
+  if (event.key === 'Home') {
+    event.preventDefault();
+    music.currentTime = 0;
+    updateTime();
+  }
 
-function startParticles() {
-  if (particleFrame || reduceMotion.matches) return;
-  particleFrame = requestAnimationFrame(drawParticles);
-}
-
-function stopParticles() {
-  if (particleFrame) cancelAnimationFrame(particleFrame);
-  particleFrame = null;
-}
-
-resizeParticles();
-startParticles();
-
-window.addEventListener('resize', () => {
-  resizeParticles();
-}, { passive: true });
-
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    stopParticles();
-    card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
-  } else {
-    resizeParticles();
-    startParticles();
+  if (event.key === 'End') {
+    event.preventDefault();
+    music.currentTime = music.duration;
+    updateTime();
   }
 });
+
+music.addEventListener('loadedmetadata', updateTime);
+music.addEventListener('timeupdate', updateTime);
+music.addEventListener('play', () => {
+  playIcon.textContent = 'Ⅱ';
+});
+music.addEventListener('pause', () => {
+  playIcon.textContent = '▶';
+});
+
+document.querySelector('.mini-close')?.addEventListener('click', openDepressionTab);
+document.querySelector('.win-control--close')?.addEventListener('click', openDepressionTab);
+entry.addEventListener('click', enterSite);
+discordCopy.addEventListener('click', copyDiscord);
+
+setVolumes();
+updateTime();
+startSearchTyping();
+setupTilt();
