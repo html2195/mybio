@@ -3,135 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Squerxx — bio</title>
-  <meta name="description" content="Dark glitch bio page with links, avatar, music and animated visual effects." />
-  <meta property="og:title" content="twizzy_daster — bio" />
-  <meta property="og:description" content="GitHub · Telegram · Steam · Discord" />
-  <meta property="og:image" content="assets/avatar.jpg" />
-  <link rel="icon" href="assets/avatar.jpg" />
-  <link rel="preload" href="assets/bg.webp" as="image" type="image/webp" />
+  <meta name="description" content="Windows Mica style bio page with a soft blurred fog background, quiet rain and stellar music." />
+  <meta property="og:title" content="Squerxx — bio" />
+  <meta property="og:description" content="Young developer · Python · Node.js" />
+  <meta property="og:image" content="assets/foggy-city.jpg" />
+
+  <link rel="preload" href="assets/foggy-city.jpg" as="image" />
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <div class="noise"></div>
-  <div class="scanlines"></div>
-  <div class="bg" aria-hidden="true"></div>
-  <canvas id="particles" aria-hidden="true"></canvas>
-
-  <svg class="svg-sprite" width="0" height="0" aria-hidden="true" focusable="false">
-    <symbol id="logo-github" viewBox="0 0 64 64">
-      <path class="icon-shadow" d="M31.8 6.5c-14.4.1-25.9 11.8-25.9 26.1 0 11.5 7.4 21.2 17.7 24.7 1.3.2 1.8-.5 1.8-1.2v-6.4c-7.2 1.6-8.7-3-8.7-3-1.2-3-2.9-3.8-2.9-3.8-2.4-1.6.2-1.6.2-1.6 2.7.2 4.1 2.8 4.1 2.8 2.4 4.1 6.2 2.9 7.7 2.2.2-1.7.9-2.9 1.7-3.5-5.8-.7-11.8-2.9-11.8-12.8 0-2.8 1-5.1 2.7-6.9-.3-.7-1.2-3.4.3-6.8 0 0 2.2-.7 7.2 2.7a24.9 24.9 0 0 1 13.1 0c5-3.4 7.2-2.7 7.2-2.7 1.5 3.4.6 6.1.3 6.8 1.7 1.8 2.7 4.1 2.7 6.9 0 10-6.1 12.1-11.9 12.8 1 .9 1.9 2.6 1.9 5.2v8.1c0 .7.5 1.5 1.8 1.2 10.3-3.5 17.7-13.2 17.7-24.7 0-14.4-11.6-26.1-26-26.1z"/>
-      <path class="icon-main" d="M31.8 6.5c-14.4.1-25.9 11.8-25.9 26.1 0 11.5 7.4 21.2 17.7 24.7 1.3.2 1.8-.5 1.8-1.2v-6.4c-7.2 1.6-8.7-3-8.7-3-1.2-3-2.9-3.8-2.9-3.8-2.4-1.6.2-1.6.2-1.6 2.7.2 4.1 2.8 4.1 2.8 2.4 4.1 6.2 2.9 7.7 2.2.2-1.7.9-2.9 1.7-3.5-5.8-.7-11.8-2.9-11.8-12.8 0-2.8 1-5.1 2.7-6.9-.3-.7-1.2-3.4.3-6.8 0 0 2.2-.7 7.2 2.7a24.9 24.9 0 0 1 13.1 0c5-3.4 7.2-2.7 7.2-2.7 1.5 3.4.6 6.1.3 6.8 1.7 1.8 2.7 4.1 2.7 6.9 0 10-6.1 12.1-11.9 12.8 1 .9 1.9 2.6 1.9 5.2v8.1c0 .7.5 1.5 1.8 1.2 10.3-3.5 17.7-13.2 17.7-24.7 0-14.4-11.6-26.1-26-26.1z"/>
-      <path class="icon-cut" d="M19 17.2c2.6-1.8 7.4-3.3 12.7-3.3s10.5 1.6 13.2 3.5"/>
-    </symbol>
-
-    <symbol id="logo-telegram" viewBox="0 0 64 64">
-      <path class="icon-shadow" d="M57.4 9.7 7.5 29.1c-3.4 1.4-3.4 3.3-.6 4.1l12.8 4 29.7-18.8c1.4-.9 2.7-.4 1.6.6L27 40.7l-.9 13.2c1.3 0 1.9-.6 2.7-1.3l6.5-6.3 13.5 10c2.5 1.4 4.3.7 4.9-2.3l8.8-41.6c.9-3.6-1.4-5.2-5.1-3z"/>
-      <path class="icon-main" d="M57.4 9.7 7.5 29.1c-3.4 1.4-3.4 3.3-.6 4.1l12.8 4 29.7-18.8c1.4-.9 2.7-.4 1.6.6L27 40.7l-.9 13.2c1.3 0 1.9-.6 2.7-1.3l6.5-6.3 13.5 10c2.5 1.4 4.3.7 4.9-2.3l8.8-41.6c.9-3.6-1.4-5.2-5.1-3z"/>
-      <path class="icon-cut" d="m19.7 37.2 7.3 3.5 24-21.7"/>
-    </symbol>
-
-    <symbol id="logo-steam" viewBox="0 0 64 64">
-      <path class="icon-shadow" d="M31.8 5.8C18.7 5.8 7.9 15.5 6.1 28.1l13.8 5.7a8.3 8.3 0 0 1 4.8-1.5h.5l6.1-8.8v-.1c0-6.2 5.1-11.3 11.3-11.3S54 17.2 54 23.4 48.9 34.7 42.7 34.7h-.3l-8.7 6.2v.4c0 4.7-3.8 8.5-8.5 8.5-4.1 0-7.5-2.9-8.3-6.8L5.7 38.4C8.7 49.8 19.2 58.2 31.8 58.2c14.5 0 26.2-11.7 26.2-26.2S46.3 5.8 31.8 5.8zM23.1 45.6l-3.2-1.4c.6 1.2 1.6 2.2 2.9 2.8 3.1 1.3 6.6-.1 7.9-3.2.6-1.5.6-3.1 0-4.6a5.9 5.9 0 0 0-3.3-3.2 6 6 0 0 0-4.5-.1l3.3 1.4c2.2.9 3.2 3.4 2.3 5.6-.9 2.2-3.4 3.2-5.4 2.7zm19.5-14.2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-2.1a5.9 5.9 0 1 1 0-11.8 5.9 5.9 0 0 1 0 11.8z"/>
-      <path class="icon-main" d="M31.8 5.8C18.7 5.8 7.9 15.5 6.1 28.1l13.8 5.7a8.3 8.3 0 0 1 4.8-1.5h.5l6.1-8.8v-.1c0-6.2 5.1-11.3 11.3-11.3S54 17.2 54 23.4 48.9 34.7 42.7 34.7h-.3l-8.7 6.2v.4c0 4.7-3.8 8.5-8.5 8.5-4.1 0-7.5-2.9-8.3-6.8L5.7 38.4C8.7 49.8 19.2 58.2 31.8 58.2c14.5 0 26.2-11.7 26.2-26.2S46.3 5.8 31.8 5.8zM23.1 45.6l-3.2-1.4c.6 1.2 1.6 2.2 2.9 2.8 3.1 1.3 6.6-.1 7.9-3.2.6-1.5.6-3.1 0-4.6a5.9 5.9 0 0 0-3.3-3.2 6 6 0 0 0-4.5-.1l3.3 1.4c2.2.9 3.2 3.4 2.3 5.6-.9 2.2-3.4 3.2-5.4 2.7zm19.5-14.2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-2.1a5.9 5.9 0 1 1 0-11.8 5.9 5.9 0 0 1 0 11.8z"/>
-      <path class="icon-cut" d="m19.9 33.8 13.8 7.1 8.7-6.2"/>
-    </symbol>
-
-    <symbol id="logo-discord" viewBox="0 0 64 64">
-      <path class="icon-shadow" d="M49.1 14.8A42 42 0 0 0 38.7 11l-1.3 2.7a38.7 38.7 0 0 0-11.5 0L24.6 11a42 42 0 0 0-10.4 3.8C7.6 24.5 5.8 34 6.7 43.3a41.8 41.8 0 0 0 12.8 6.5l2.7-4.3a26.5 26.5 0 0 1-4.2-2.1l1-1.1c8.1 3.8 16.9 3.8 24.9 0l1 1.1a27 27 0 0 1-4.2 2.1l2.7 4.3a41.8 41.8 0 0 0 12.8-6.5c1.2-10.8-1.8-20.2-7.1-28.5zM24.7 37.5c-2.5 0-4.5-2.3-4.5-5s2-5 4.5-5 4.6 2.3 4.5 5c0 2.7-2 5-4.5 5zm14.6 0c-2.5 0-4.5-2.3-4.5-5s2-5 4.5-5 4.6 2.3 4.5 5c0 2.7-2 5-4.5 5z"/>
-      <path class="icon-main" d="M49.1 14.8A42 42 0 0 0 38.7 11l-1.3 2.7a38.7 38.7 0 0 0-11.5 0L24.6 11a42 42 0 0 0-10.4 3.8C7.6 24.5 5.8 34 6.7 43.3a41.8 41.8 0 0 0 12.8 6.5l2.7-4.3a26.5 26.5 0 0 1-4.2-2.1l1-1.1c8.1 3.8 16.9 3.8 24.9 0l1 1.1a27 27 0 0 1-4.2 2.1l2.7 4.3a41.8 41.8 0 0 0 12.8-6.5c1.2-10.8-1.8-20.2-7.1-28.5zM24.7 37.5c-2.5 0-4.5-2.3-4.5-5s2-5 4.5-5 4.6 2.3 4.5 5c0 2.7-2 5-4.5 5zm14.6 0c-2.5 0-4.5-2.3-4.5-5s2-5 4.5-5 4.6 2.3 4.5 5c0 2.7-2 5-4.5 5z"/>
-      <path class="icon-cut" d="M20.1 22.4c7-3 16.8-3 23.8 0M22.2 45.5c6.4 2.7 13 2.7 19.4 0"/>
-    </symbol>
-  </svg>
-
+  <div class="scene" aria-hidden="true">
+    <div class="scene__image"></div>
+    <div class="scene__fog scene__fog--one"></div>
+    <div class="scene__fog scene__fog--two"></div>
+    <div class="scene__rain"></div>
+    <div class="scene__grain"></div>
+  </div>
 
   <section class="entry" id="entry">
-    <div class="entry__box">
-      <div class="entry__logo">Squer<span>xx</span></div>
-      <p>click to enter</p>
+    <div class="mini-window">
+      <div class="mini-window__bar">
+        <span class="win-dot win-dot--blue"></span>
+        <span class="mini-title">squerxx.exe</span>
+        <button class="mini-close" type="button" aria-label="close preview">×</button>
+      </div>
+
+      <div class="mini-window__body">
+        <div class="mini-avatar" aria-label="avatar"></div>
+        <h2>Squerxx</h2>
+        <p>click to enter</p>
+      </div>
     </div>
   </section>
 
-  <main class="page" id="page">
-    <article class="profile-card" id="card">
-      <div class="banner">
-        <div class="banner__glow"></div>
-      </div>
-
-      <div class="avatar-wrap">
-        <img src="assets/avatar.jpg" alt="avatar" class="avatar" decoding="async" draggable="false" />
-        <span class="status" title="online"></span>
-      </div>
-
-      <section class="identity">
-        <p class="eyebrow">profile // bio</p>
-        <h1 class="glitch" data-text="Squerxx">Squerxx</h1>
-        <p class="tagline" id="typed">dark profile · glitch aesthetic · Squerxx</p>
-      </section>
-
-      <section class="stats" aria-label="profile stats">
-        <div><b>01</b><span>github</span></div>
-        <div><b>02</b><span>telegram</span></div>
-        <div><b>03</b><span>steam</span></div>
-        <div><b>04</b><span>discord</span></div>
-      </section>
-
-      <nav class="links" aria-label="social links">
-        <a href="https://github.com/html2195" target="_blank" rel="noopener noreferrer" class="link-card link-card--github">
-          <span class="icon social-icon" data-mark="GIT">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo-github"></use></svg>
-          </span>
-          <span><b>GitHub</b><small>github.com/html2195</small></span>
-          <em>open</em>
-        </a>
-        <a href="https://t.me/deluser0" target="_blank" rel="noopener noreferrer" class="link-card link-card--telegram">
-          <span class="icon social-icon" data-mark="TG">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo-telegram"></use></svg>
-          </span>
-          <span><b>Telegram</b><small>@deluser0</small></span>
-          <em>open</em>
-        </a>
-        <a href="https://steamcommunity.com/id/Bananaboy200952/" target="_blank" rel="noopener noreferrer" class="link-card link-card--steam">
-          <span class="icon social-icon" data-mark="STM">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo-steam"></use></svg>
-          </span>
-          <span><b>Steam</b><small>Bananaboy200952</small></span>
-          <em>open</em>
-        </a>
-        <button class="link-card link-card--discord" id="discordCopy" type="button" data-copy="twizzy_daster">
-          <span class="icon social-icon" data-mark="DSC">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo-discord"></use></svg>
-          </span>
-          <span><b>Discord</b><small>twizzy_daster</small></span>
-          <em id="discordText">copy</em>
-        </button>
-      </nav>
-
-      <section class="player" aria-label="music player">
-        <audio id="audio" src="assets/H4TE666.mp3" preload="metadata" loop></audio>
-        <button class="play" id="play" type="button" aria-label="play or pause music">▶</button>
-        <div class="track">
-          <div class="track__top">
-            <b>H4TE666</b>
-            <span id="time">00:00 / 00:00</span>
-          </div>
-          <div class="bar" id="bar"><span id="progress"></span></div>
+  <main class="page">
+    <article class="profile-window" id="card">
+      <header class="titlebar">
+        <div class="titlebar__left">
+          <span class="app-dot"></span>
+          <span class="app-title">squerxx.exe</span>
         </div>
-        <button class="mute" id="mute" type="button" aria-label="mute music">sound</button>
-        <div class="volume">
-          <span class="volume__label">vol</span>
-          <input id="volume" class="volume__slider" type="range" min="0" max="100" step="1" value="22" aria-label="music volume" />
-          <span id="volumeValue" class="volume__value">22%</span>
+
+        <div class="titlebar__controls" aria-label="window controls">
+          <button class="win-control win-control--min" type="button" aria-label="minimize"></button>
+          <button class="win-control win-control--max" type="button" aria-label="maximize"></button>
+          <button class="win-control win-control--close" type="button" aria-label="close"></button>
+        </div>
+      </header>
+
+      <section class="profile">
+        <div class="avatar" aria-label="avatar">
+          <span aria-hidden="true"></span>
+        </div>
+
+        <p class="eyebrow"></p>
+        <h1>Squerxx</h1>
+        <p class="tagline" id="typed">Ukraine · depression · teenager</p>
+
+        <div class="skill-grid" aria-label="profile tags">
+          <button type="button" class="skill-card">
+            <span>01</span>
+            <b>Young developer</b>
+          </button>
+          <button type="button" class="skill-card">
+            <span>02</span>
+            <b>Python</b>
+          </button>
+          <button type="button" class="skill-card">
+            <span>03</span>
+            <b>Node.js</b>
+          </button>
+        </div>
+
+        <nav class="links" aria-label="social links">
+          <a class="link-card" href="https://github.com/html2195" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 .7A11.3 11.3 0 0 0 .7 12.3c0 5.1 3.3 9.4 7.9 10.8.6.1.8-.3.8-.6v-2.1c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1.8 2.1 3.2 1.5.1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2A11 11 0 0 1 12 6.6c1 0 1.9.1 2.8.4C17 5.5 18 5.8 18 5.8c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6a11.6 11.6 0 0 0 7.8-10.8A11.3 11.3 0 0 0 12 .7Z"/></svg>
+            </span>
+            <span>
+              <b>GitHub</b>
+              <small>github.com/html2195</small>
+            </span>
+            <em>open</em>
+          </a>
+
+          <a class="link-card" href="https://t.me/deluser0" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M21.7 4.4 18.4 20c-.2 1.1-.9 1.4-1.9.9l-5.2-3.8-2.5 2.4c-.3.3-.5.5-1 .5l.3-5.3 9.7-8.8c.4-.4-.1-.6-.7-.2L5.2 13.2.1 11.6c-1.1-.3-1.1-1.1.2-1.6L20.2 2.3c.9-.3 1.7.2 1.5 2.1Z"/></svg>
+            </span>
+            <span>
+              <b>Telegram</b>
+              <small>@deluser0</small>
+            </span>
+            <em>open</em>
+          </a>
+
+          <a class="link-card" href="https://steamcommunity.com/id/Bananaboy200952" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 1a11 11 0 0 0-11 10.6l5.9 2.5a3 3 0 0 1 1.7-.5l2.7-4v-.1a4.1 4.1 0 1 1 4.1 4.1h-.1l-3.9 2.8a3 3 0 0 1-5.9.8L1.2 15.4A11 11 0 1 0 12 1Zm-3.5 17.8a2.1 2.1 0 0 0 1.9-3l-1.2-.5c.4.8.1 1.7-.7 2.1-.8.3-1.7 0-2-.7l-.9-.4a2.1 2.1 0 0 0 2.9 2.5Zm6.9-6.7a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4Zm0-.7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>
+            </span>
+            <span>
+              <b>Steam</b>
+              <small>Bananaboy200952</small>
+            </span>
+            <em>open</em>
+          </a>
+
+          <button class="link-card link-card--button" id="discordCopy" type="button">
+            <span class="link-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M19.7 4.9A17.7 17.7 0 0 0 15.3 3l-.2.4c1.6.5 2.4 1.1 3.2 1.7a13.6 13.6 0 0 0-12.6 0c.8-.6 1.8-1.2 3.2-1.7L8.7 3a17.7 17.7 0 0 0-4.4 1.9C1.6 8.9.9 12.8 1.2 16.6A17.8 17.8 0 0 0 6.6 19.4l.7-1.1c-1.2-.4-2.2-1-3.1-1.8l.7.4a14.6 14.6 0 0 0 14.2 0l.7-.4c-.9.8-2 1.4-3.1 1.8l.7 1.1a17.8 17.8 0 0 0 5.4-2.8c.4-4.4-.7-8.2-3.1-11.7ZM8.4 14.2c-1.1 0-2-1-2-2.1s.9-2.1 2-2.1 2 1 2 2.1-.9 2.1-2 2.1Zm7.2 0c-1.1 0-2-1-2-2.1s.9-2.1 2-2.1 2 1 2 2.1-.9 2.1-2 2.1Z"/></svg>
+            </span>
+            <span>
+              <b>Discord</b>
+              <small id="discordText">twizzy_daster</small>
+            </span>
+            <em>copy</em>
+          </button>
+        </nav>
+
+        <section class="audio-panel" aria-label="audio player">
+          <div class="player-head">
+            <button class="play" id="play" type="button" aria-label="play or pause">
+              <span id="playIcon">▶</span>
+            </button>
+
+            <div class="track">
+              <div class="track__top">
+                <b>stellar</b>
+                <span id="time">00:00 / 00:00</span>
+              </div>
+              <div class="bar" id="bar" role="slider" aria-label="music progress" tabindex="0">
+                <span id="progress"></span>
+                <i id="progressThumb"></i>
+              </div>
+              <div class="track__bottom">
+                <span>rain ambience enabled</span>
+                <span>soft mode</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="player-controls">
+            <button class="chip" id="rewind" type="button">−10s</button>
+            <button class="chip" id="rainToggle" type="button">rain on</button>
+            <button class="chip" id="forward" type="button">+10s</button>
+            <button class="chip" id="mute" type="button">sound</button>
+          </div>
+
+          <div class="volume">
+            <span>vol</span>
+            <input id="volume" type="range" min="0" max="100" value="48" aria-label="master volume" />
+            <span id="volumeValue">48%</span>
+          </div>
+        </section>
+
+        <div class="search-pill" aria-label="search phrase">
+          <span class="search-icon" aria-hidden="true"></span>
+          <span class="search-typing" id="searchTyping"></span>
+          <button class="key-btn" type="button" aria-label="command key">⌘</button>
+          <button class="key-btn" type="button" aria-label="K key">K</button>
         </div>
       </section>
     </article>
-
-    <footer class="footer">
-      <span>made for dark bio</span>
-      <span class="pulse-dot"></span>
-      <span>fullscreen ready</span>
-    </footer>
   </main>
+
+  <audio id="musicAudio" src="assets/stellar.mp3" preload="metadata" loop></audio>
+  <audio id="rainAudio" src="assets/rain.mp3" preload="auto" loop></audio>
 
   <script src="script.js"></script>
 </body>
